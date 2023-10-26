@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Gerenciador de Contas Bancárias</title>
+</head>
+<body>
+    <div class="navbar">
+        <h1>Gerenciador de Contas Bancárias</h1>
+    </div>
+    <div class="container">
+        <div class="left-panel">
+            <label for="agencia">Agência:</label>
+            <input type="text" id="agencia"><br><br>
+        
+            <label for "tipo">Tipo de Conta:</label>
+            <select id="tipo">
+                <option value="Conta Corrente">Conta Corrente</option>
+                <option value="Conta Poupança">Conta Poupança</option>
+                <option value="Conta Universitária">Conta Universitária</option>
+            </select><br><br>
+        
+            <label for="numeroCartao">Número do Cartão:</label>
+            <input type="text" id="numeroCartao"><br><br>
+        
+            <label for="valorOperacao">Valor da Operação:</label>
+            <input type="text" id="valorOperacao"><br><br>
+        
+            <button onclick="sacar()">Sacar</button>
+            <button onclick="depositar()">Depositar</button>
+        </div>
+        <div class="right-panel">
+            <h2>Movimentações</h2>
+            <ul id="movimentacoes"></ul>
+        </div>
+        <div class="chart-panel">
+            <canvas id="saldoChart" width="400" height="200"></canvas>
+            <canvas id="saqueChart" width="400" height="200"></canvas>
+            <canvas id="depositoChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const movimentacoesList = document.getElementById("movimentacoes");
+        let saldo = 0; // Saldo inicial
+
+        // Gráfico de saldo
+        const saldoChart = new Chart(document.getElementById("saldoChart"), {
+            type: "line",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: "Saldo",
+                    data: [],
+                    borderColor: "blue",
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom'
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Gráfico de saques
+        const saqueChart = new Chart(document.getElementById("saqueChart"), {
+            type: "bar",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: "Saques",
+                    data: [],
+                    backgroundColor: "red"
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom'
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Gráfico de depósitos
+        const depositoChart = new Chart(document.getElementById("depositoChart"), {
+            type: "bar",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: "Depósitos",
+                    data: [],
+                    backgroundColor: "green"
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom'
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        function sacar() {
+            const agencia = document.getElementById("agencia").value;
+            const tipoConta = document.getElementById("tipo").value;
+            const numeroCartao = document.getElementById("numeroCartao").value;
+            const valorOperacao = parseFloat(document.getElementById("valorOperacao").value);
+
+            if (isNaN(valorOperacao) || valorOperacao <= 0) {
+                alert("Valor de saque inválido.");
+                return;
+            }
+
+            // Atualizar gráfico de saques
+            saqueChart.data.labels.push(new Date().toLocaleTimeString());
+            saqueChart.data.datasets[0].data.push(1);
+            saqueChart.update();
+
+            // Atualizar saldo
+            saldo -= valorOperacao;
+            atualizarGraficoSaldo(saldo);
+
+            // Simular uma transação de saque
+            const movimentacao = `Saque - Agência: ${agencia}, Tipo de Conta: ${tipoConta}, Número do Cartão: ${numeroCartao}, Valor: R$ ${valorOperacao}`;
+            adicionarMovimentacao(movimentacao);
+        }
+
+        function depositar() {
+            const agencia = document.getElementById("agencia").value;
+            const tipoConta = document.getElementById("tipo").value;
+            const numeroCartao = document.getElementById("numeroCartao").value;
+            const valorOperacao = parseFloat(document.getElementById("valorOperacao").value);
+
+            if (isNaN(valorOperacao) || valorOperacao <= 0) {
+                alert("Valor de depósito inválido.");
+                return;
+            }
+
+            // Atualizar gráfico de depósitos
+            depositoChart.data.labels.push(new Date().toLocaleTimeString());
+            depositoChart.data.datasets[0].data.push(1);
+            depositoChart.update();
+
+            // Atualizar saldo
+            saldo += valorOperacao;
+            atualizarGraficoSaldo(saldo);
+
+            // Simular uma transação de depósito
+            const movimentacao = `Depósito - Agência: ${agencia}, Tipo de Conta: ${tipoConta}, Número do Cartão: ${numeroCartao}, Valor: R$ ${valorOperacao}`;
+            adicionarMovimentacao(movimentacao);
+        }
+
+        function adicionarMovimentacao(movimentacao) {
+            const listItem = document.createElement("li");
+            listItem.textContent = movimentacao;
+            movimentacoesList.appendChild(listItem);
+        }
+
+        function atualizarGraficoSaldo(valor) {
+            saldoChart.data.labels.push(new Date().toLocaleTimeString());
+            saldoChart.data.datasets[0].data.push(valor);
+            saldoChart.update();
+        }
+    </script>
+</body>
+</html>
